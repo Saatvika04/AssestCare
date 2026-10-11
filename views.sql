@@ -16,12 +16,9 @@ SELECT a.asset_id, a.asset_code, a.asset_name,
        (SELECT MAX(i.inspection_date)
           FROM Inspection i
           WHERE i.asset_id = a.asset_id) AS last_inspection,
-       (SELECT rating FROM (
-            SELECT i.condition_rating AS rating
-            FROM Inspection i
-            WHERE i.asset_id = a.asset_id
-            ORDER BY i.inspection_date DESC
-        ) t WHERE ROWNUM = 1) AS latest_rating
+       (SELECT MAX(i.condition_rating) KEEP (DENSE_RANK LAST ORDER BY i.inspection_date)
+          FROM Inspection i
+          WHERE i.asset_id = a.asset_id) AS latest_rating
 FROM Asset a
 JOIN AssetType   t ON a.asset_type_id = t.asset_type_id
 JOIN Location    l ON a.location_id   = l.location_id
