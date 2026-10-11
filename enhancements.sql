@@ -65,11 +65,12 @@ END;
 CREATE OR REPLACE FUNCTION fn_asset_risk_score (p_asset_id IN NUMBER)
 RETURN NUMBER
 IS
-    v_fault_count NUMBER := 0;
-    v_sev_penalty NUMBER := 0;
-    v_recency     NUMBER := 0;
-    v_condition   NUMBER := 3;
-    v_risk        NUMBER;
+    v_fault_count  NUMBER := 0;
+    v_sev_penalty  NUMBER := 0;
+    v_recency      NUMBER := 0;
+    v_open_penalty NUMBER := 0;
+    v_condition    NUMBER := 3;
+    v_risk         NUMBER;
 BEGIN
     -- 1. How many times has it failed?
     SELECT COUNT(*) INTO v_fault_count
@@ -90,14 +91,22 @@ BEGIN
       INTO v_recency
       FROM Fault WHERE asset_id = p_asset_id;
 
-    -- 4. What is the asset's current condition? (rating 1..5, 5 = excellent)
+    -- 4. Is anything still UNRESOLVED? An open/active fault is a live risk.
+    SELECT COUNT(*) INTO v_open_penalty
+      FROM Fault WHERE asset_id = p_asset_id AND fault_status <> 'Resolved';
+    IF v_open_penalty > 0 THEN
+        v_open_penalty := 25;
+    END IF;
+
+    -- 5. What is the asset's current condition? (rating 1..5, 5 = excellent)
     SELECT NVL(ROUND(AVG(condition_rating), 1), 3)
       INTO v_condition
       FROM Inspection WHERE asset_id = p_asset_id;
 
-    -- Combine: frequency, severity and recency RAISE risk; good condition lowers it.
+    -- Combine: frequency, severity, recency and OPEN faults RAISE risk;
+    -- good condition lowers it.
     v_risk := GREATEST(0,
-               (v_fault_count * 10) + v_sev_penalty + v_recency
+               (v_fault_count * 10) + v_sev_penalty + v_recency + v_open_penalty
                - (v_condition * 5));
 
     RETURN v_risk;

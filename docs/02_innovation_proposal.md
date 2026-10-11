@@ -23,6 +23,7 @@ A database-centric system with a **predictive maintenance-risk score** computed 
 risk = (failure frequency × 10)
      + (severity penalty: Low 2 / Medium 4 / High 6 / Critical 10)
      + (recency penalty: up to 45 for a failure in the last 45 days)
+     + (unresolved-fault penalty: 25 if any fault is still Open/In Progress)
      − (average condition rating × 5)
 ```
 

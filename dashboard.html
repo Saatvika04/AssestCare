@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AssetCare — Community Maintenance Intelligence</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --primary:#4f46e5; --primary-soft:#eef2ff;
+    --bg:#f4f5fb; --card:#ffffff; --muted:#64748b; --line:#e5e7eb;
+    --high:#ef4444; --moderate:#f59e0b; --low:#22c55e;
+    --ink:#0f172a;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:'Segoe UI', system-ui, -apple-system, sans-serif; background:var(--bg); color:var(--ink); padding:28px; }
+  .wrap{ max-width:1180px; margin:0 auto; }
+
+  header{ background:linear-gradient(135deg,#4f46e5,#7c3aed); color:#fff; border-radius:16px; padding:26px 30px; margin-bottom:22px; }
+  header h1{ font-size:24px; letter-spacing:-.3px; }
+  header p{ opacity:.85; margin-top:6px; font-size:14px; }
+
+  .kpis{ display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-bottom:22px; }
+  .kpi{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; }
+  .kpi .label{ font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); }
+  .kpi .value{ font-size:28px; font-weight:700; margin-top:6px; }
+  .kpi .sub{ font-size:12px; color:var(--muted); margin-top:4px; }
+
+  .grid{ display:grid; grid-template-columns:1.55fr 1fr; gap:16px; margin-bottom:16px; }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; }
+  .card h2{ font-size:15px; margin-bottom:14px; }
+
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  th{ text-align:left; color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.3px; padding:8px 10px; border-bottom:2px solid var(--line); }
+  td{ padding:10px; border-bottom:1px solid var(--line); }
+  tr:last-child td{ border-bottom:none; }
+
+  .pill{ display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:600; }
+  .pill.high{ background:#fee2e2; color:#b91c1c; }
+  .pill.moderate{ background:#fef3c7; color:#b45309; }
+  .pill.low{ background:#dcfce7; color:#15803d; }
+  .pill.open{ background:#fee2e2; color:#b91c1c; }
+  .pill.progress{ background:#fef3c7; color:#b45309; }
+  .pill.done{ background:#dcfce7; color:#15803d; }
+
+  .bar{ height:10px; border-radius:6px; background:#eef2ff; overflow:hidden; margin-top:6px; }
+  .bar span{ display:block; height:100%; background:var(--primary); border-radius:6px; }
+  .bar span.high{ background:var(--high); }
+  .bar span.moderate{ background:var(--moderate); }
+  .bar span.low{ background:var(--low); }
+
+  footer{ text-align:center; color:var(--muted); font-size:12px; margin-top:22px; }
+  .canvas-box{ position:relative; height:240px; }
+  .canvas-box.tall{ height:280px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>AssetCare</h1>
+    <p>Community Asset Lifecycle &amp; Maintenance Intelligence — a database-driven dashboard. Predicted failure risk ranks assets so maintenance happens <em>before</em> the next breakdown.</p>
+  </header>
+
+  <div class="kpis">
+    <div class="kpi"><div class="label">Total Assets</div><div class="value">14</div><div class="sub">across 7 buildings</div></div>
+    <div class="kpi"><div class="label">Faults Logged</div><div class="value">13</div><div class="sub">lifetime to date</div></div>
+    <div class="kpi"><div class="label">Open Requests</div><div class="value">3</div><div class="sub">awaiting closure</div></div>
+    <div class="kpi"><div class="label">Maintenance Spend</div><div class="value">₹1,44,500</div><div class="sub">labour + parts</div></div>
+    <div class="kpi"><div class="label">High-Risk Assets</div><div class="value" style="color:var(--high)">4</div><div class="sub">service proactively</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Predicted Failure Risk (v_asset_health)</h2>
+      <table>
+        <thead><tr><th>Asset</th><th>Type</th><th>Status</th><th>Faults</th><th>Risk Score</th><th>Band</th></tr></thead>
+        <tbody>
+          <tr><td>AC-LIB-01 — Library HVAC</td><td>HVAC</td><td>Under Repair</td><td>1</td><td>55.0</td><td><span class="pill high">HIGH</span></td></tr>
+          <tr><td>SL-MG-01 — Main Gate Streetlight</td><td>Streetlight</td><td>Active</td><td>2</td><td>47.0</td><td><span class="pill high">HIGH</span></td></tr>
+          <tr><td>LIFT-BLK-A-01 — Block A Lift</td><td>Lift</td><td>Active</td><td>3</td><td>43.7</td><td><span class="pill high">HIGH</span></td></tr>
+          <tr><td>RAMP-COM-01 — Community Hall Ramp</td><td>Ramp</td><td>Out of Service</td><td>1</td><td>40.0</td><td><span class="pill high">HIGH</span></td></tr>
+          <tr><td>WD-GYM-01 — Gym Water Dispenser</td><td>Dispenser</td><td>Under Repair</td><td>1</td><td>34.0</td><td><span class="pill moderate">MODERATE</span></td></tr>
+          <tr><td>LIFT-LIB-01 — Library Service Lift</td><td>Lift</td><td>Active</td><td>1</td><td>29.0</td><td><span class="pill moderate">MODERATE</span></td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:12px;font-size:12px;color:var(--muted)">risk = frequency + severity + recency + unresolved-fault − condition</p>
+    </div>
+
+    <div class="card">
+      <h2>Fault Severity Distribution</h2>
+      <div class="canvas-box"><canvas id="sevChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Maintenance Spend by Asset</h2>
+      <div class="canvas-box tall"><canvas id="costChart"></canvas></div>
+    </div>
+
+    <div class="card">
+      <h2>Open Maintenance Requests</h2>
+      <table>
+        <thead><tr><th>Asset</th><th>Priority</th><th>Status</th><th>Days Open</th></tr></thead>
+        <tbody>
+          <tr><td>LIFT-LIB-01<br><span style="color:var(--muted);font-size:12px">door sensor intermittent</span></td><td>Medium</td><td><span class="pill open">Pending</span></td><td>50</td></tr>
+          <tr><td>WD-GYM-01<br><span style="color:var(--muted);font-size:12px">no cold water</span></td><td>Medium</td><td><span class="pill progress">In Progress</span></td><td>40</td></tr>
+          <tr><td>AC-LIB-01<br><span style="color:var(--muted);font-size:12px">compressor failure</span></td><td>High</td><td><span class="pill progress">In Progress</span></td><td>21</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:12px;font-size:12px;color:var(--muted)">Longest-open request surfaced first (unassigned: LIFT-LIB-01).</p>
+    </div>
+  </div>
+
+  <footer>AssetCare prototype — front-end view of the Oracle database (12 tables, 3NF, PL/SQL risk scoring, triggers &amp; role-based access).</footer>
+</div>
+
+<script>
+  const sev = new Chart(document.getElementById('sevChart'), {
+    type:'doughnut',
+    data:{ labels:['Medium','High','Low','Critical'],
+      datasets:[{ data:[5,4,2,2],
+        backgroundColor:['#f59e0b','#ef4444','#22c55e','#7c3aed'],
+        borderWidth:0 }]},
+    options:{ plugins:{ legend:{ position:'bottom' } }, cutout:'62%' }
+  });
+
+  const cost = new Chart(document.getElementById('costChart'), {
+    type:'bar',
+    data:{ labels:['LIFT-BLK-A-01','GEN-CH-01','RAMP-COM-01','SL-PARK-01','SL-MG-01','WD-LIB-01'],
+      datasets:[{ label:'Spend (₹)',
+        data:[120900,11000,5400,2800,2300,2100],
+        backgroundColor:['#ef4444','#4f46e5','#4f46e5','#4f46e5','#4f46e5','#4f46e5'],
+        borderRadius:6 }]},
+    options:{ plugins:{ legend:{ display:false } },
+      scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>'₹'+(v/1000)+'k' } } } }
+  });
+</script>
+</body>
+</html>
